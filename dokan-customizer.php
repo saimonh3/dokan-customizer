@@ -16,10 +16,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class Dokan_Menu_Customizer {
 	private static $instance = null;
+	private $all_menus = array();
+	private $new_menus = array();
 
 	public function __construct() {
 		$this->init_hooks();
 		$this->define_constants();
+		$this->all_menus = get_option( 'dokan_customized_menus' );
+		$this->new_menus = get_theme_mod( 'menu_settings' );
 	}
 
 	public function define_constants() {
@@ -41,26 +45,20 @@ class Dokan_Menu_Customizer {
 			'capability'  => 'edit_theme_options',
 		) );
 
-		$wp_customizer->add_setting( 'menu_settings', array(
-			'default' 		=> 'test',
-			'type'			=> 'theme_mod',
-			'capability'	=> 'edit_theme_options',
-			'transport'		=> 'refresh',
-		) );
-
-		// $wp_customizer->add_control( 'menu_control', array(
-		// 	'label' 		=> __( 'Menu Control', 'dokan-lite' ),
-		// 	'settings'		=> 'menu_settings',
-		// 	'priority' 		=> 10,
-		// 	'section'		=> 'menu_option',
-		// 	'type' 			=> 'text',
-		// ) );
-		$wp_customizer->add_control( new Menu_Dropdown_Custom_control( $wp_customizer, 'menu_control', array(
-			'label' 		=> __( 'Menu Control', 'dokan-lite' ),
-			'settings'		=> 'menu_settings',
-			'priority' 		=> 10,
-			'section'		=> 'menu_option',
-		) ) );
+		foreach ( $this->all_menus[0] as $key => $menu ) {
+			$wp_customizer->add_setting( "menu_settings[$key]", array(
+				'default' 		=> $menu['title'],
+				'type'			=> 'theme_mod',
+				'capability'	=> 'edit_theme_options',
+				'transport'		=> 'refresh',
+			) );
+			$wp_customizer->add_control( new Menu_Dropdown_Custom_control( $wp_customizer, "menu_settings[$key]", array(
+				'label' 		=> __( 'Menu Control', 'dokan-lite' ),
+				'settings'		=> "menu_settings[$key]",
+				'priority' 		=> $key,
+				'section'		=> 'menu_option',
+			) ) );
+		}
 
 		// if ( $wp_customizer->is_preview() && ! is_admin() ) {
 		// 	add_action( 'wp_footer', array( $this, 'dokan_customizer_preview' ), 12 );
@@ -71,28 +69,46 @@ class Dokan_Menu_Customizer {
 		// register global hooks
 		// add_action( 'customize_preview_init', array( $this, 'dokan_customizer_scripts' ) );
 		add_action( 'customize_register', array( $this, 'dokan_menu_cusotmize_register' ) );
+		add_action( 'customize_save_after', array( $this, 'dokan_save_customizer_settings' ) );
+		add_action( 'wp_footer', array( $this, 'dokan_customizer_preview' ), 12 );
 		// register backend specefic hooks
 		if ( is_admin() ) {
 			//
 		} else {
 			// register frontend specefic hooks	
 			add_filter( 'dokan_get_dashboard_nav', array( $this, 'dokan_get_dashboard_menus' ), 100 ); 
+			add_action('init', array($this, 'test'));
 		}
+	}
+	public function test() {
+		// var_dump( $this->new_menus );
+		// var_dump( $this->all_menus );
+		// var_dump( get_option( 'dokan_customized_menus' ) );
+	}
+
+	public function dokan_save_customizer_settings() {
+		// update_option( 'dokan_customized_menus',  );
 	}
 
 	public static function dokan_get_dashboard_menus( $urls ) {
 		$menus_to_save = array();
 
-		$urls['dashboard'] = array(
-			'title' 	=> 'New Dashboard',
-			'icon' 		=> '',
-			'url'		=> '',
-			'pos'		=> '10'
-		);
-
-		foreach ( $urls as $url ) {
-			array_push( $menus_to_save, $url );
+		if ( ! empty( $this->new_menus ) ) {
+			foreach ( $urls as $key => $value ) {
+				foreach ( $this->new_menus as $new_key => $new_value ) {
+					if ( strtolower( $value['title'] ) == $new_key ) {
+						$urls[$key] = array(
+							'title' => strtolower( $value['title'] ) == $new_key ? $new_value : $value['title'],
+							'icon' 	=> $value['icon'],
+							'url'  	=> $value['url'],
+							'pos' 	=> $value['pos'],
+						);						
+					}
+				}
+			}
 		}
+
+		array_push( $menus_to_save, $urls );
 
 		update_option( 'dokan_customized_menus', $menus_to_save );
 
@@ -106,16 +122,15 @@ class Dokan_Menu_Customizer {
 	public function dokan_customizer_preview() {
 	    ?>
 	    <script type="text/javascript">
-	    (function($){
-	    	$('.dokan-menu-customizer').on('click', function() {
-	    		console.log('I\' being changed');
-	    	});
-	    	console.log('I am loaded');
-	    	$('.button-link.item-edit').on('click', function() {
-	    		$('dokan-menu-customizer').addClass('menu-item-edit-active');
-	    		console.log('I\' being changed');
-	    	});
-	    })(jQuery)
+		jQuery(document).ready(function() {
+			setTimeout(function() {
+		   		console.log('loeded');
+		   	  	$('.menu-item-bar').on('click', function(e) {
+	    			var self = $(this);
+	    			console.log(self);
+	    		});
+			}, 4000);
+		});
 	    </script>
 	    <?php 
 	}
