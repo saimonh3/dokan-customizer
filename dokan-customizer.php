@@ -67,10 +67,10 @@ class Dokan_Menu_Customizer {
 
 	public function init_hooks() {
 		// register global hooks
-		// add_action( 'customize_preview_init', array( $this, 'dokan_customizer_scripts' ) );
+		add_action( 'customize_controls_enqueue_scripts', array( $this, 'dokan_customizer_scripts' ) );
 		add_action( 'customize_register', array( $this, 'dokan_menu_cusotmize_register' ) );
 		add_action( 'customize_save_after', array( $this, 'dokan_save_customizer_settings' ) );
-		add_action( 'wp_footer', array( $this, 'dokan_customizer_preview' ), 12 );
+		// add_action( 'wp_footer', array( $this, 'dokan_customizer_preview' ), 12 );
 		// register backend specefic hooks
 		if ( is_admin() ) {
 			//
@@ -81,8 +81,8 @@ class Dokan_Menu_Customizer {
 		}
 	}
 	public function test() {
-		// var_dump( $this->new_menus );
-		// var_dump( $this->all_menus );
+		var_dump( $this->new_menus );
+		var_dump( $this->all_menus );
 		// var_dump( get_option( 'dokan_customized_menus' ) );
 	}
 
@@ -98,7 +98,7 @@ class Dokan_Menu_Customizer {
 				foreach ( $this->new_menus as $new_key => $new_value ) {
 					if ( strtolower( $value['title'] ) == $new_key ) {
 						$urls[$key] = array(
-							'title' => strtolower( $value['title'] ) == $new_key ? $new_value : $value['title'],
+							'title' => $new_value,
 							'icon' 	=> $value['icon'],
 							'url'  	=> $value['url'],
 							'pos' 	=> $value['pos'],
@@ -122,15 +122,15 @@ class Dokan_Menu_Customizer {
 	public function dokan_customizer_preview() {
 	    ?>
 	    <script type="text/javascript">
-		jQuery(document).ready(function() {
-			setTimeout(function() {
-		   		console.log('loeded');
-		   	  	$('.menu-item-bar').on('click', function(e) {
-	    			var self = $(this);
-	    			console.log(self);
-	    		});
-			}, 4000);
-		});
+		// jQuery(document).ready(function() {
+		// 	setTimeout(function() {
+		//    		console.log('loeded');
+		//    	  	$('.menu-item-bar').on('click', function(e) {
+	 //    			var self = $(this);
+	 //    			console.log(self);
+	 //    		});
+		// 	}, 4000);
+		// });
 	    </script>
 	    <?php 
 	}

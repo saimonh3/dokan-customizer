@@ -20,15 +20,14 @@ class Menu_Dropdown_Custom_control extends WP_Customize_Control {
     $this->all_menus = get_option( 'dokan_customized_menus' );
     $this->number_of_menus = count( get_option( 'dokan_customized_menus' ) );
   }
-
+// substr( $this->link(), 43, -2 );
   public function render_content() { 
     $this->value = $this->value() == 'Settings <i class="fa fa-angle-right pull-right"></i>' ? 'Settings' : $this->value();
     ?>
- <!--    <li id="customize-control" class="dokan-menu-customizer customize-control customize-control-nav_menu_item menu-item menu-item-depth-0 menu-item-page move-left-disabled move-up-disabled move-right-disabled menu-item-edit-inactive" style="display: list-item;"> -->
     <div class="menu-item-bar">
       <div class="menu-item-handle ui-sortable-handle">
-        <span class="item-type" aria-hidden="true">Page</span>
-          <span class="item-title" aria-hidden="true">
+        <span class="item-type" aria-hidden="true"></span>
+          <span class="item-title" aria-hidden="true"><?php echo $this->value(); ?></span>
             <span class="spinner"></span>
             <span class="menu-item-title"><?php 'menu title' ?></span>
           </span>
@@ -39,24 +38,24 @@ class Menu_Dropdown_Custom_control extends WP_Customize_Control {
       </div>
     </div>
 
-    <div class="menu-item-settings" id="menu-item-settings" style="display: none;">
+    <div class="menu-item-settings" id="menu-item-settings" style="height: 0; padding: 0; transition: all .5s ease">
       <p class="description description-thin">
         <label for="edit-menu-item-title">
           Title<br>
-          <input type="text" id="" placeholder="<?php echo 'menu title' ?>" class="widefat edit-menu-item-title" name="<?php echo 'menu-item-title' ?>" value="<?php echo $this->value; ?>" <?php echo $this->link() ?>>
+          <input type="text" id="" placeholder="Menu Title" class="widefat edit-menu-item-title" name="<?php echo 'menu-item-title' ?>" value="<?php echo $this->value; ?>" <?php echo $this->link() ?>>
         </label>
       </p>      
       <p class="description description-thin">
         <label for="edit-menu-item-title">
           Icon<br>
-          <input type="text" id="edit-menu-item-title" placeholder="<?php echo 'menu title' ?>" class="widefat edit-menu-item-title" name="menu-item-title">
+          <input type="text" id="edit-menu-item-title" placeholder="Menu Title" class="widefat edit-menu-item-title" name="menu-item-title">
         </label>
       </p>
 
       <p class="description description-thin">
         <label for="edit-menu-item-title">
           Position<br>
-          <input type="text" id="edit-menu-item-title" placeholder="<?php echo 'menu title' ?>" class="widefat edit-menu-item-title" name="menu-item-title" value="<?php $this->value() ?>">
+          <input type="text" id="edit-menu-item-title" placeholder="Menu Title" class="widefat edit-menu-item-title" name="menu-item-title" value="<?php $this->value() ?>">
         </label>
       </p>
 
@@ -66,29 +65,5 @@ class Menu_Dropdown_Custom_control extends WP_Customize_Control {
           Open link in a new tab        </label>
       </p>
     </div>
-
-<script type="text/javascript">
-(function($){
-  // $('.customize-control .menu-item-bar').on('click', function(e) {
-  //   var self = $(this);
-
-  //   console.log(self);
-
-    // if ( self.hasClass('menu-item-edit-inactive') ) {
-    //   self.addClass('menu-item-edit-active');
-    //   self.removeClass('menu-item-edit-inactive');
-    //   $('.menu-item-settings').css({
-    //     'display': 'block'
-    //   });
-    // } else {
-    //   self.removeClass('menu-item-edit-active');
-    //   self.addClass('menu-item-edit-inactive');
-    //   $('.menu-item-settings').css({
-    //     'display': 'none'
-    //   });
-    // }
-  // });
-})(jQuery)
-</script>
   <?php }
 }
