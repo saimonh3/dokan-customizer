@@ -87,7 +87,8 @@ class Dokan_Menu_Customizer {
 		add_action( 'customize_controls_enqueue_scripts', array( $this, 'dokan_customizer_scripts' ) );
 		add_action( 'customize_register', array( $this, 'dokan_menu_cusotmize_register' ) );
 		// add_action( 'customize_save_after', array( $this, 'dokan_save_customizer_settings' ) );
-		add_action( 'init', array( $this, 'dokan_save_default_theme_mods' ) );
+		add_filter( 'dokan_get_dashboard_nav', array( $this, 'dokan_save_customized_menus' ), 100 );
+		add_action( 'init', array( $this, 'dokan_save_default_theme_mods' ), 10 );
 		// add_filter( 'dokan_get_dashboard_nav', array( $this, 'dokan_set_dashboard_menus' ) );
 		// add_action( 'wp_footer', array( $this, 'dokan_customizer_preview' ), 12 );
 		// register backend specefic hooks
@@ -95,7 +96,7 @@ class Dokan_Menu_Customizer {
 			add_action( 'switch_theme', array( $this, 'dokan_customizer_menus_reset' ) );
 		} else {
 			// register frontend specefic hooks	
-			add_filter( 'dokan_get_dashboard_nav', array( $this, 'dokan_get_dashboard_menus' ), 100 );  
+			add_filter( 'dokan_get_dashboard_nav', array( $this, 'dokan_get_dashboard_menus' ), 1000 );  
 			add_action('init', array($this, 'test'));
 		}
 	}
@@ -103,7 +104,7 @@ class Dokan_Menu_Customizer {
 		// var_dump( array_combine(['dashboard', 'products'], $this->new_menus) );
 		// var_dump( $this->default_menus );
 		// var_dump( $this->final_menus );
-		// var_dump($this->new_menus );
+		// var_dump($this->menus_name );
 		
 		// var_dump( $this->all_menus );
 		// var_dump( get_option( 'dokan_customized_menus' ) );
@@ -113,51 +114,43 @@ class Dokan_Menu_Customizer {
 	// 	return strtoupper($menus);
 	// }
 
+	// get all the default menus to set in the customizer
+	public function dokan_save_customized_menus( $urls ) {
+		update_option( 'dokan_customizer_menus', $urls );
+
+		return $urls;
+	}
+
     public function dokan_save_default_theme_mods() {
-    	// return early if default menu is already there
-    	if ( get_option( 'dokan_customizer_menus_isset' ) == 'yes' ) {
-    		return;
+    	//return early if default menu is already there
+    	$is_set = get_option( 'dokan_customizer_menus_isset' );
+    	if ( $is_set == 'yes' ) return;
+    	
+    	$all_menus = get_option( 'dokan_customizer_menus' );
+    	$menus = array();
+    	$menus_icons = array();
+    	$menus_pos = array();
+    	
+    	foreach ( $all_menus as $key => $value ) {
+    		$menus[$key] = $value['title'];
+    		$menus_icons[$key] = $value['icon'];
+    		$menus_pos[$key] = $value['pos'];
     	}
 
-    	// set default dokan menus in the customizer so that while setting random menu
-    	// first doesn't change it's index
-    	$menus = array(
-			'dashboard'	=> 'Dashboard',
-			'products'	=> 'Products',
-			'orders'	=> 'Orders',
-			'withdraw' 	=> 'Withdraw',
-			'settings' 	=> 'Settings',
-			'coupons' 	=> 'Coupons',
-			'reviews' 	=> 'Reviews',
-			'reports' 	=> 'Reports',
-			'booking' 	=> 'Booking' 
-    	);
-    	$menus_icons = array(
-			'dashboard' => 'fa-tachometer',
-			'products' 	=> 'fa-briefcase',
-			'orders' 	=> 'fa-shopping-cart',
-			'withdraw' 	=> 'fa-upload',
-			'settings' 	=> 'fa-cog',
-			'coupons' 	=> 'fa-gift',
-			'reviews' 	=> 'fa-comments-o',
-			'reports' 	=> 'fa-line-chart',
-			'booking' 	=> 'fa-calendar' 
-    	);
-    	$menus_pos = array(
-			'dashboard' => '1',
-			'products' 	=> '2',
-			'orders' 	=> '3',
-			'withdraw' 	=> '7',
-			'settings' 	=> '20',
-			'coupons' 	=> '4',
-			'reviews' 	=> '6',
-			'reports' 	=> '5',
-			'booking' 	=> '8' 
-    	);
+    	$menus_icons = array_map( array( $this, 'filter_menus_icons' ), $menus_icons );
+
     	set_theme_mod( 'menu_settings', $menus );
     	set_theme_mod( 'menu_settings_icon', $menus_icons );
     	set_theme_mod( 'menu_settings_pos', $menus_pos );
     	update_option( 'dokan_customizer_menus_isset', 'yes' );
+    }
+
+    public function filter_menus_icons( $key ) {
+    	$filtered_icon = array();
+    	$pattern	= '/(fa-[a-z]+-?[a-z]+)/';
+    	preg_match_all( $pattern, $key, $filtered_icon );
+
+    	return $filtered_icon[0][0];
     }
 
     // set only default menus name
