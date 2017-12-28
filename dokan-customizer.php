@@ -223,10 +223,10 @@ class Dokan_Menu_Customizer {
 				foreach ( $this->final_menus as $new_key => $new_value ) {
 					if ( strtolower( $value['title'] ) == $new_key ) {
 						$urls[$key] = array(
-							'title' => $new_value[0],
-							'icon' 	=> $new_value[1],
+							'title' => ! empty( $new_value[0] ) ? $new_value[0] : $value['title'],
+							'icon' 	=> ! empty( $new_value[1] ) ? '<i class="fa ' . $new_value[1] . '"></i>' : $value['icon'],
 							'url' 	=> $value['url'],
-							'pos' 	=> $new_value[2],
+							'pos' 	=> ! empty( $new_value[2] ) ? $new_value[2] : $value['pos'],
 						);
 					}
 				}
