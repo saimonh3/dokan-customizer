@@ -80,23 +80,19 @@ class Dokan_Menu_Customizer {
 				'section'		=> 'menu_option',
 			) ) );
 		}
-
-		// if ( $wp_customizer->is_preview() && ! is_admin() ) {
-		// 	add_action( 'wp_footer', array( $this, 'dokan_customizer_preview' ), 12 );
-		// }
 	}
 
 	public function init_hooks() {
 		// register global hooks
 		add_action( 'customize_controls_enqueue_scripts', array( $this, 'dokan_customizer_scripts' ) );
 		add_action( 'customize_register', array( $this, 'dokan_menu_cusotmize_register' ) );
-		add_action( 'customize_save_after', array( $this, 'dokan_save_customizer_settings' ) );
-		// add_action( 'init', array( $this, 'dokan_save_default_theme_mods' ) );
+		// add_action( 'customize_save_after', array( $this, 'dokan_save_customizer_settings' ) );
+		add_action( 'init', array( $this, 'dokan_save_default_theme_mods' ) );
 		// add_filter( 'dokan_get_dashboard_nav', array( $this, 'dokan_set_dashboard_menus' ) );
 		// add_action( 'wp_footer', array( $this, 'dokan_customizer_preview' ), 12 );
 		// register backend specefic hooks
 		if ( is_admin() ) {
-			//
+			add_action( 'switch_theme', array( $this, 'dokan_customizer_menus_reset' ) );
 		} else {
 			// register frontend specefic hooks	
 			add_filter( 'dokan_get_dashboard_nav', array( $this, 'dokan_get_dashboard_menus' ), 100 );  
@@ -106,7 +102,7 @@ class Dokan_Menu_Customizer {
 	public function test() {
 		// var_dump( array_combine(['dashboard', 'products'], $this->new_menus) );
 		// var_dump( $this->default_menus );
-		var_dump( $this->final_menus );
+		// var_dump( $this->final_menus );
 		// var_dump($this->new_menus );
 		
 		// var_dump( $this->all_menus );
@@ -118,52 +114,53 @@ class Dokan_Menu_Customizer {
 	// }
 
     public function dokan_save_default_theme_mods() {
-    	// set_theme_mod("menu_settings", array('dashboard' => 'dashboard new eita'));
-    	// set_theme_mod("menu_settings_icon", array('dashboard' => 'dashboard new icon'));
-    	// set_theme_mod("menu_settings_pos", array('dashboard' => '20'));
-    	// foreach ( $this->all_menus[0] as $key => $value ) {
-    	// 	var_dump($key);
-	    // 	set_theme_mod( "menu_settings", array( $key => $value['title'] ) );
-	    // 	// set_theme_mod( "menu_settings_icon", array( $key => $value['icon'] ) );
-	    // 	// set_theme_mod( "menu_settings_pos", array( $key => $value['pos'] ) );
-    	// }
-    	set_theme_mod("menu_settings", array( 'dashboard', 'dashboard new eita', 'products', 'products new eita' ) );
-    	// set_theme_mod("menu_settings_icon", array('dashboard' => 'dash icon'));
-    	// set_theme_mod("menu_settings_pos", array('dashboard' => '12'));
+    	// return early if default menu is already there
+    	if ( get_option( 'dokan_customizer_menus_isset' ) == 'yes' ) {
+    		return;
+    	}
 
-    	// set_theme_mod("menu_settings", array('products' => 'product new eita'));
-    	// set_theme_mod("menu_settings_icon", array('products' => 'product icon'));
-    	// set_theme_mod("menu_settings_pos", array('products' => '13'));
-
-    	// set_theme_mod("menu_settings", array('orders' => 'orders new eita'));
-    	// set_theme_mod("menu_settings_icon", array('orders' => 'orders icon'));
-    	// set_theme_mod("menu_settings_pos", array('orders' => '14'));
-
-    	// set_theme_mod("menu_settings", array('withdraw' => 'withdraw new eita'));
-    	// set_theme_mod("menu_settings_icon", array('withdraw' => 'withdraw icon'));
-    	// set_theme_mod("menu_settings_pos", array('withdraw' => '15'));
-    	
-    	// set_theme_mod("menu_settings", array('settings' => 'settings new eita'));
-    	// set_theme_mod("menu_settings_icon", array('settings' => 'settings icon'));
-    	// set_theme_mod("menu_settings_pos", array('settings' => '15'));    	
-    	
-    	// set_theme_mod("menu_settings", array('coupons' => 'coupons new eita'));
-    	// set_theme_mod("menu_settings_icon", array('coupons' => 'coupons icon'));
-    	// set_theme_mod("menu_settings_pos", array('coupons' => '16'));    	
-
-    	// set_theme_mod("menu_settings", array('reviews' => 'reviews new eita'));
-    	// set_theme_mod("menu_settings_icon", array('reviews' => 'reviews icon'));
-    	// set_theme_mod("menu_settings_pos", array('reviews' => '17'));
-
-    	// set_theme_mod("menu_settings", array('reports' => 'reports new eita'));
-    	// set_theme_mod("menu_settings_icon", array('reports' => 'reports icon'));
-    	// set_theme_mod("menu_settings_pos", array('reports' => '18'));
-
-    	// set_theme_mod("menu_settings", array('booking' => 'booking new eita'));
-    	// set_theme_mod("menu_settings_icon", array('booking' => 'booking icon'));
-    	// set_theme_mod("menu_settings_pos", array('booking' => '18'));
+    	// set default dokan menus in the customizer so that while setting random menu
+    	// first doesn't change it's index
+    	$menus = array(
+			'dashboard'	=> 'Dashboard',
+			'products'	=> 'Products',
+			'orders'	=> 'Orders',
+			'withdraw' 	=> 'Withdraw',
+			'settings' 	=> 'Settings',
+			'coupons' 	=> 'Coupons',
+			'reviews' 	=> 'Reviews',
+			'reports' 	=> 'Reports',
+			'booking' 	=> 'Booking' 
+    	);
+    	$menus_icons = array(
+			'dashboard' => 'fa-tachometer',
+			'products' 	=> 'fa-briefcase',
+			'orders' 	=> 'fa-shopping-cart',
+			'withdraw' 	=> 'fa-upload',
+			'settings' 	=> 'fa-cog',
+			'coupons' 	=> 'fa-gift',
+			'reviews' 	=> 'fa-comments-o',
+			'reports' 	=> 'fa-line-chart',
+			'booking' 	=> 'fa-calendar' 
+    	);
+    	$menus_pos = array(
+			'dashboard' => '1',
+			'products' 	=> '2',
+			'orders' 	=> '3',
+			'withdraw' 	=> '7',
+			'settings' 	=> '20',
+			'coupons' 	=> '4',
+			'reviews' 	=> '6',
+			'reports' 	=> '5',
+			'booking' 	=> '8' 
+    	);
+    	set_theme_mod( 'menu_settings', $menus );
+    	set_theme_mod( 'menu_settings_icon', $menus_icons );
+    	set_theme_mod( 'menu_settings_pos', $menus_pos );
+    	update_option( 'dokan_customizer_menus_isset', 'yes' );
     }
 
+    // set only default menus name
 	public function set_default_menus() {
 		$menus = $this->all_menus;
 
@@ -172,6 +169,7 @@ class Dokan_Menu_Customizer {
 		}
 	}
 
+	// set all the new menus and sort it
 	public function set_all_new_menus() {
 		$menus = get_theme_mod( 'menu_settings' );
 		$menus_icon = get_theme_mod( 'menu_settings_icon' );
@@ -186,6 +184,7 @@ class Dokan_Menu_Customizer {
 		return $sorted_menus;
 	}
 
+	// setting up the final menus to match with the array structure of dokan_get_dashboard_nav filter
 	public function creating_final_menu_array() {
 		if ( empty( $this->new_menus ) ) {
 			return;
@@ -200,21 +199,12 @@ class Dokan_Menu_Customizer {
 		$this->final_menus = $final_menus;
 	}
 
-	// public function dokan_save_customizer_settings() {
-		
-	// }
+	// reset the dokan_customizer_menus_isset flag to no
+	public function dokan_customizer_menus_reset() {
+		update_option( 'dokan_customizer_menus_isset', 'no' );
+	}
 
-	// public function dokan_set_dashboard_menus( $menus ) {
-	// 	$all_menus = array();
-
-	// 	foreach ( $menus as $key => $value ) {
-	// 		array_push( $this->default_menus, $key );
-	// 	}
-
-	// 	return $menus;
-	// }
-
-
+	// rename, reposition or change icon and show in the dashboard
 	public static function dokan_get_dashboard_menus( $urls ) {
 		$menus_to_save = array();
 
@@ -242,22 +232,6 @@ class Dokan_Menu_Customizer {
 
 	public function dokan_customizer_scripts() {
 		wp_enqueue_script( 'dokan-menu-customizer', DOKAN_CUSTOMIZER_ASSETS . '/js/customizer.js' , array( 'jquery', 'customize-preview' ), false, true );
-	}
-
-	public function dokan_customizer_preview() {
-	    ?>
-	    <script type="text/javascript">
-		// jQuery(document).ready(function() {
-		// 	setTimeout(function() {
-		//    		console.log('loeded');
-		//    	  	$('.menu-item-bar').on('click', function(e) {
-	 //    			var self = $(this);
-	 //    			console.log(self);
-	 //    		});
-		// 	}, 4000);
-		// });
-	    </script>
-	    <?php 
 	}
 
 	public static function get_instance() {
