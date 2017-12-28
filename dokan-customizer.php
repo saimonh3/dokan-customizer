@@ -45,7 +45,7 @@ class Dokan_Menu_Customizer {
 	}
 
 	public function dokan_menu_cusotmize_register( $wp_customizer ) {
-		require_once DOKAN_CUSTOMIZER_DIR . 'classes/class-menu-drop.php';
+		require_once DOKAN_CUSTOMIZER_DIR . 'classes/class-dokan-menu-controller.php';
 
 		$wp_customizer->add_section( 'menu_option', array( 
 			'title'			=> __( 'Dokan Menu Customizer', 'dokan-lite' ),
@@ -76,7 +76,7 @@ class Dokan_Menu_Customizer {
 				'transport'		=> 'refresh',
 			) );
 
-			$wp_customizer->add_control( new Menu_Dropdown_Custom_control( $wp_customizer, "menu_settings[$key]", array(
+			$wp_customizer->add_control( new Dokan_Menu_Controller( $wp_customizer, "menu_settings[$key]", array(
 				'label' 		=> __( 'Menu Control', 'dokan-lite' ),
 				'settings'		=> array(
 					"menu_settings[$key]",

@@ -1,21 +1,13 @@
 <?php
 /**
- * Customize API: WP_Customize_Nav_Menu_Control class
+ * Dokan_Menu_Controller Class
  *
- * @package WordPress
- * @subpackage Customize
- * @since 4.4.0
+ * @since 0.1
  */
-
-/**
- * Customize Nav Menu Control Class.
- *
- * @since 4.3.0
- */
-class Menu_Dropdown_Custom_control extends WP_Customize_Control {
-  protected $number_of_menus = 0;
-  protected $all_menus = array();
-  public $html = array();
+class Dokan_Menu_Controller extends WP_Customize_Control {
+  protected $number_of_menus  = 0;
+  protected $all_menus        = array();
+  public $html                = array();
 
   public function set_all_menus() {
     $this->all_menus = get_option( 'dokan_customized_menus' );
