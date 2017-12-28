@@ -2,7 +2,7 @@
 /*
 Plugin Name: Doakn Customizer
 Plugin URI: https://wordpress.org/plugins/dokan-lite/
-Description: A simple plugin to customize dokan plugin
+Description: A simple plugin to customize dokan dashboard menus
 Version: 0.1
 Author: weDevs
 Author URI: https://wedevs.com/
@@ -15,17 +15,17 @@ License: GPL2
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 class Dokan_Menu_Customizer {
-	private static $instance = null;
-	private $all_menus = array();
-	private $new_menus = array();
-	private $default_menus = array();
+	private static $instance;
+	private $all_menus;
+	private $new_menus;
+	private $default_menus;
 	private $final_menus;
 
 	public function __construct() {
 		$this->init_hooks();
 		$this->define_constants();
-		$this->all_menus = get_option( 'dokan_customized_menus' );
-		$this->new_menus = $this->set_all_new_menus();
+		$this->set_all_menus();
+		$this->set_all_new_menus();
 		$this->set_default_menus();
 		$this->creating_final_menu_array();
 	}
@@ -39,6 +39,11 @@ class Dokan_Menu_Customizer {
 		}
 	}
 
+	// set all menus to $all_menus property
+	public function set_all_menus() {
+		$this->all_menus = get_option( 'dokan_customizer_menus' );
+	}
+
 	public function dokan_menu_cusotmize_register( $wp_customizer ) {
 		require_once DOKAN_CUSTOMIZER_DIR . 'classes/class-menu-drop.php';
 
@@ -49,28 +54,30 @@ class Dokan_Menu_Customizer {
 			'capability'  => 'edit_theme_options',
 		) );
 
-		foreach ( $this->all_menus[0] as $key => $menu ) {
+		foreach ( $this->all_menus as $key => $menu ) {
 			$wp_customizer->add_setting( "menu_settings[$key]", array(
 				'default' 		=> $menu['title'],
 				'type'			=> 'theme_mod',
 				'capability'	=> 'edit_theme_options',
 				'transport'		=> 'refresh',
 			) );
+
 			$wp_customizer->add_setting( "menu_settings_icon[$key]", array(
 				'default' 		=> $menu['title'],
 				'type'			=> 'theme_mod',
 				'capability'	=> 'edit_theme_options',
 				'transport'		=> 'refresh',
 			) );
+
 			$wp_customizer->add_setting( "menu_settings_pos[$key]", array(
 				'default' 		=> $menu['title'],
 				'type'			=> 'theme_mod',
 				'capability'	=> 'edit_theme_options',
 				'transport'		=> 'refresh',
 			) );
+
 			$wp_customizer->add_control( new Menu_Dropdown_Custom_control( $wp_customizer, "menu_settings[$key]", array(
 				'label' 		=> __( 'Menu Control', 'dokan-lite' ),
-				// 'settings'		=> "menu_settings[$key]",
 				'settings'		=> array(
 					"menu_settings[$key]",
 					"menu_settings_icon[$key]",
@@ -86,17 +93,13 @@ class Dokan_Menu_Customizer {
 		// register global hooks
 		add_action( 'customize_controls_enqueue_scripts', array( $this, 'dokan_customizer_scripts' ) );
 		add_action( 'customize_register', array( $this, 'dokan_menu_cusotmize_register' ) );
-		// add_action( 'customize_save_after', array( $this, 'dokan_save_customizer_settings' ) );
-		add_filter( 'dokan_get_dashboard_nav', array( $this, 'dokan_save_customized_menus' ), 100 );
 		add_action( 'init', array( $this, 'dokan_save_default_theme_mods' ), 10 );
-		// add_filter( 'dokan_get_dashboard_nav', array( $this, 'dokan_set_dashboard_menus' ) );
-		// add_action( 'wp_footer', array( $this, 'dokan_customizer_preview' ), 12 );
 		// register backend specefic hooks
 		if ( is_admin() ) {
 			add_action( 'switch_theme', array( $this, 'dokan_customizer_menus_reset' ) );
 		} else {
 			// register frontend specefic hooks	
-			add_filter( 'dokan_get_dashboard_nav', array( $this, 'dokan_get_dashboard_menus' ), 1000 );  
+			add_filter( 'dokan_get_dashboard_nav', array( $this, 'dokan_get_dashboard_menus' ), 200 );  
 			add_action('init', array($this, 'test'));
 		}
 	}
@@ -104,34 +107,29 @@ class Dokan_Menu_Customizer {
 		// var_dump( array_combine(['dashboard', 'products'], $this->new_menus) );
 		// var_dump( $this->default_menus );
 		// var_dump( $this->final_menus );
-		// var_dump($this->menus_name );
+		// var_dump($this->new_menus );
 		
 		// var_dump( $this->all_menus );
-		// var_dump( get_option( 'dokan_customized_menus' ) );
+		// var_dump( get_option( 'dokan_customizer_menus' ) );
 	}
-
-	// public function dokan_sort_menu( $menus ) {
-	// 	return strtoupper($menus);
-	// }
 
 	// get all the default menus to set in the customizer
-	public function dokan_save_customized_menus( $urls ) {
-		update_option( 'dokan_customizer_menus', $urls );
+	// public function dokan_save_customized_menus( $urls ) {
+	// 	update_option( 'dokan_customizer_menus', $urls );
 
-		return $urls;
-	}
+	// 	return $urls;
+	// }
 
     public function dokan_save_default_theme_mods() {
     	//return early if default menu is already there
     	$is_set = get_option( 'dokan_customizer_menus_isset' );
     	if ( $is_set == 'yes' ) return;
     	
-    	$all_menus = get_option( 'dokan_customizer_menus' );
     	$menus = array();
     	$menus_icons = array();
     	$menus_pos = array();
     	
-    	foreach ( $all_menus as $key => $value ) {
+    	foreach ( $this->all_menus as $key => $value ) {
     		$menus[$key] = $value['title'];
     		$menus_icons[$key] = $value['icon'];
     		$menus_pos[$key] = $value['pos'];
@@ -156,8 +154,9 @@ class Dokan_Menu_Customizer {
     // set only default menus name
 	public function set_default_menus() {
 		$menus = $this->all_menus;
+		$this->default_menus = array();
 
-		foreach ( $menus[0] as $key => $value ) {
+		foreach ( $menus as $key => $value ) {
 			array_push($this->default_menus, $key );			
 		}
 	}
@@ -174,7 +173,7 @@ class Dokan_Menu_Customizer {
 
 		$sorted_menus = array_map( null, $menus, $menus_icon, $menus_pos );
 
-		return $sorted_menus;
+		$this->new_menus = $sorted_menus;
 	}
 
 	// setting up the final menus to match with the array structure of dokan_get_dashboard_nav filter
@@ -198,8 +197,12 @@ class Dokan_Menu_Customizer {
 	}
 
 	// rename, reposition or change icon and show in the dashboard
-	public static function dokan_get_dashboard_menus( $urls ) {
-		$menus_to_save = array();
+	public function dokan_get_dashboard_menus( $urls ) {
+		// save original dashbord menus to get all the original menus
+		// we are checking so that update_options only runs once
+		if ( is_array( $this->final_menus )  && empty( $this->final_menus ) ) {
+			update_option( 'dokan_customizer_menus', $urls );
+		}
 
 		if ( is_array( $this->final_menus ) && ! empty( $this->final_menus ) ) {
 			foreach ( $urls as $key => $value ) {
@@ -216,10 +219,6 @@ class Dokan_Menu_Customizer {
 			}
 		}
 
-		array_push( $menus_to_save, $urls );
-
-		update_option( 'dokan_customized_menus', $menus_to_save );
-
 		return $urls;
 	}
 
@@ -229,7 +228,7 @@ class Dokan_Menu_Customizer {
 
 	public static function get_instance() {
 		if ( is_null( self::$instance ) ) {
-			self::$instance = new self();
+			self::$instance = new Self();
 		}
 
 		return self::$instance;
